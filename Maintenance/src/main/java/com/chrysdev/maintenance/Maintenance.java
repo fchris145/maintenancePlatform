@@ -22,7 +22,7 @@ public class Maintenance {
 
     private static HashMap<String, String> userAccount = new HashMap<>();
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) throws IOException {
         userAccount.put("junior", "1234");
         ArrayList<String> appareils = new ArrayList<>();
         boolean continuerP = true;
@@ -72,8 +72,10 @@ public class Maintenance {
                             System.out.println("Une erreur s'est produite, veuillez reessayer...");
                             continue;
                         }
-                        if(choix > 0 && choix < appareils.size()){
+                        if (choix > 0 && choix < appareils.size()) {
                             System.out.print("D'accord, votre demande sera transmise au maintenancier.");
+                            String cheminAdmin = "files/notifsAdmin";
+
                             continuerC = false;
                         } else {
                             System.err.print("Erreur: Le nombre entre doit etre compris entre 1 et " + (appareils.size() - 1));
@@ -194,5 +196,22 @@ public class Maintenance {
             System.out.println("Une erreur s'est produite lors de la lecture du fichier");
         }
         return appareils;
+    }
+
+    public static int envoiNotif(String cheminAdmin, String nomU, ArrayList appareils, int choix, boolean type) throws IOException {
+        FileWriter fileWriter = new FileWriter(cheminAdmin);
+        BufferedWriter writer = new BufferedWriter(fileWriter);
+        try {
+            if(type){
+                writer.write(nomU + "Accepte de reparer votre " + appareils.get(choix));
+                writer.newLine();
+            } else {
+                writer.write(nomU + "Demande a faire reparer son " + appareils.get(choix));
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            System.out.println("Une erreur s'est produite lors de l'aces au fichier.");
+        }
+        return 0;
     }
 }
