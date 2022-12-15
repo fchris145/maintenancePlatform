@@ -20,10 +20,13 @@ import java.util.ArrayList;
  */
 public class Maintenance {
 
+    @SuppressWarnings("FieldMayBeFinal")
     private static HashMap<String, String> userAccount = new HashMap<>();
+    private static HashMap<String, String> adminAccount = new HashMap<>();
 
     public static void main(String[] args) throws IOException {
         userAccount.put("junior", "1234");
+        adminAccount.put("christian", "12345");
         ArrayList<String> appareils = new ArrayList<>();
         boolean continuerP = true;
         while (continuerP) {
@@ -48,13 +51,17 @@ public class Maintenance {
                 if (choix < 0 && choix > 2) {
                     System.out.println("Votre choix doit etre compris entre 1 et 2");
                 } else if (choix == 1) {
+                    System.out.println("D'accord,  vous allez etre rediriger vers le Menu client");
+                    String nomU = "";
+                    nomU = connectUser(true);
+                    System.out.println("");
                 } else if (choix == 2) {
                     System.out.println("D'accord,  vous allez etre rediriger vers le Menu client");
                     String nomU = "";
-                    nomU = connectUser();
+                    nomU = connectUser(false);
                     System.out.println("Voici la liste des appareils disponible a la reparation:");
                     String chemin = "files/listeRepair.txt";
-                    appareils = lireFichier(chemin);
+                    lireFichier(chemin);
                     int comp = 1;
                     for (String i : appareils) {
                         System.out.println(comp + ") " + i);
@@ -72,13 +79,14 @@ public class Maintenance {
                             System.out.println("Une erreur s'est produite, veuillez reessayer...");
                             continue;
                         }
-                        if (choix > 0 && choix < appareils.size()) {
-                            System.out.print("D'accord, votre demande sera transmise au maintenancier.");
-                            String cheminAdmin = "files/notifsAdmin";
-
+                        if (choix > 0 && choix <= appareils.size()) {
+                            System.out.println("D'accord, votre demande sera transmise au maintenancier.");
+                            String cheminAdmin = "files/notifsAdmin.txt";
+                            choix -= 1;
+                            envoiNotif(cheminAdmin, nomU, appareils, choix, false);
                             continuerC = false;
                         } else {
-                            System.err.print("Erreur: Le nombre entre doit etre compris entre 1 et " + (appareils.size() - 1));
+                            System.err.print("Erreur: Le nombre entre doit etre compris entre 1 et " + (appareils.size()));
                         }
                     }
                     continuer = false;
@@ -88,95 +96,185 @@ public class Maintenance {
         }
     }
 
-    public static String connectUser() {
+    public static String connectUser(boolean admin) {
         boolean continuer = true;
         String nomU = "";
-        while (continuer) {
-            System.out.println("=== Bienvenue dans l'interface reservee aux clients ===");
-            System.out.println("Que voulez-vous faire?");
-            System.out.println();
-            System.out.println("1.Creer un nouveau compte");
-            System.out.println("2. Ouvrir un compte existant");
-            int choix = 0;
-            System.out.println();
-            System.out.print("Entrez le numero de votre choix: ");
-            BufferedReader saisie = new BufferedReader(new InputStreamReader(System.in));
-            choix = 0;
-            try {
-                choix = Integer.parseInt(saisie.readLine());
-            } catch (IOException | NumberFormatException e) {
-                System.out.println("Une erreur s'est produite, veuillez reessayer...");
-                continue;
-            }
-            if (choix < 0 && choix > 2) {
-                System.out.println("Votre choix doit etre compris entre 1 et 2");
-            } else if (choix == 1) {
-                boolean continuerB = true;
-                while (continuerB) {
-                    System.out.print("Veuillez entrer votre nom d'utilisateur (attention a la casse):");
-                    saisie = new BufferedReader(new InputStreamReader(System.in));
-                    try {
-                        nomU = saisie.readLine();
-                    } catch (IOException e) {
-                        System.out.println("Une erreur s'est produite, veuillez reessayer...");
-                        continue;
-                    }
-                    if (userAccount.get(nomU) != null) {
-                        System.out.println("Ce nom d'utilisateur existe deja, veuillez en choisir un autre...");
-                        continue;
-                    } else {
-                        System.out.println("Bien.");
-                    }
-                    System.out.print("Veuillez entrer votre mot de passe: ");
-                    String mdp = "";
-                    saisie = new BufferedReader(new InputStreamReader(System.in));
-                    try {
-                        mdp = saisie.readLine();
-                    } catch (IOException e) {
-                        System.out.println("Une erreur s'est produite, veuillez reessayer...");
-                        continue;
-                    }
-                    System.out.println("Votre compte a bien ete ajoute Mr/Mme " + nomU);
-                    System.out.println("Vous allez etre rediriger vers l'ecran d'accueil des clients");
-                    userAccount.put(nomU, mdp);
-                    continuerB = false;
+        if (admin) {
+            while (continuer) {
+                System.out.println("===== Bienvenue dans l'interface reservee aux administrateurs =====");
+                System.out.println("Que voulez-vous faire?");
+                System.out.println();
+                System.out.println("1.Creer un nouveau compte");
+                System.out.println("2. Ouvrir un compte existant");
+                int choix = 0;
+                System.out.println();
+                System.out.print("Entrez le numero de votre choix: ");
+                BufferedReader saisie = new BufferedReader(new InputStreamReader(System.in));
+                choix = 0;
+                try {
+                    choix = Integer.parseInt(saisie.readLine());
+                } catch (IOException | NumberFormatException e) {
+                    System.out.println("Une erreur s'est produite, veuillez reessayer...");
+                    continue;
                 }
-                continue;
-            } else if (choix == 2) {
-                boolean continuerB = true;
-                nomU = "";
-                System.out.println("=== CONNECTEZ-VOUS A VOTRE COMPTE ===");
-                while (continuerB) {
-                    System.out.println();
-                    System.out.print("Veuillez entrer votre nom d'utilisateur (attention a la casse):");
-                    saisie = new BufferedReader(new InputStreamReader(System.in));
-                    try {
-                        nomU = saisie.readLine();
-                    } catch (IOException e) {
-                        System.out.println("Une erreur s'est produite, veuillez reessayer...");
-                        continue;
-                    }
-                    System.out.print("Veuillez entrer votre mot de passe: ");
-                    String mdp = "";
-                    saisie = new BufferedReader(new InputStreamReader(System.in));
-                    try {
-                        mdp = saisie.readLine();
-                    } catch (IOException e) {
-                        System.out.println("Une erreur s'est produite, veuillez reessayer...");
-                        continue;
-                    }
-                    if (userAccount.get(nomU) == null ? mdp == null : userAccount.get(nomU).equals(mdp)) {
-                        System.out.println("Bienvenue Mr/Mme " + nomU);
+                if (choix < 0 && choix > 2) {
+                    System.out.println("Votre choix doit etre compris entre 1 et 2");
+                } else if (choix == 1) {
+                    boolean continuerB = true;
+                    while (continuerB) {
+                        System.out.print("Veuillez entrer votre nom d'utilisateur (attention a la casse):");
+                        saisie = new BufferedReader(new InputStreamReader(System.in));
+                        try {
+                            nomU = saisie.readLine();
+                        } catch (IOException e) {
+                            System.out.println("Une erreur s'est produite, veuillez reessayer...");
+                            continue;
+                        }
+                        if (adminAccount.get(nomU) != null) {
+                            System.out.println("Ce nom d'utilisateur existe deja, veuillez en choisir un autre...");
+                            continue;
+                        } else {
+                            System.out.println("Bien.");
+                        }
+                        System.out.print("Veuillez entrer votre mot de passe: ");
+                        String mdp = "";
+                        saisie = new BufferedReader(new InputStreamReader(System.in));
+                        try {
+                            mdp = saisie.readLine();
+                        } catch (IOException e) {
+                            System.out.println("Une erreur s'est produite, veuillez reessayer...");
+                            continue;
+                        }
+                        System.out.println("Votre compte a bien ete ajoute Mr/Mme " + nomU);
+                        Utilisateur nom = new Utilisateur(nomU, false);
+                        System.out.println("Vous allez etre rediriger vers l'ecran d'accueil des clients");
+                        adminAccount.put(nomU, mdp);
                         continuerB = false;
-                    } else {
-                        System.out.println("Le nom d'utilisateur et le mot de passe ne correspondent pas...");
+                    }
+                    continue;
+                } else if (choix == 2) {
+                    boolean continuerB = true;
+                    nomU = "";
+                    System.out.println("=== CONNECTEZ-VOUS A VOTRE COMPTE ===");
+                    while (continuerB) {
+                        System.out.println();
+                        System.out.print("Veuillez entrer votre nom d'utilisateur (attention a la casse):");
+                        saisie = new BufferedReader(new InputStreamReader(System.in));
+                        try {
+                            nomU = saisie.readLine();
+                        } catch (IOException e) {
+                            System.out.println("Une erreur s'est produite, veuillez reessayer...");
+                            continue;
+                        }
+                        System.out.print("Veuillez entrer votre mot de passe: ");
+                        String mdp = "";
+                        saisie = new BufferedReader(new InputStreamReader(System.in));
+                        try {
+                            mdp = saisie.readLine();
+                        } catch (IOException e) {
+                            System.out.println("Une erreur s'est produite, veuillez reessayer...");
+                            continue;
+                        }
+                        if (adminAccount.get(nomU) == null ? mdp == null : adminAccount.get(nomU).equals(mdp)) {
+                            System.out.println("Bienvenue Mr/Mme " + nomU);
+                            continuerB = false;
+                        } else {
+                            System.out.println("Le nom d'utilisateur et le mot de passe ne correspondent pas...");
+                        }
                     }
                 }
-            }
 
-            continuer = false;
+                continuer = false;
+            }
+            return nomU;
+        } else {
+            while (continuer) {
+                System.out.println("=== Bienvenue dans l'interface reservee aux clients ===");
+                System.out.println("Que voulez-vous faire?");
+                System.out.println();
+                System.out.println("1.Creer un nouveau compte");
+                System.out.println("2. Ouvrir un compte existant");
+                int choix = 0;
+                System.out.println();
+                System.out.print("Entrez le numero de votre choix: ");
+                BufferedReader saisie = new BufferedReader(new InputStreamReader(System.in));
+                choix = 0;
+                try {
+                    choix = Integer.parseInt(saisie.readLine());
+                } catch (IOException | NumberFormatException e) {
+                    System.out.println("Une erreur s'est produite, veuillez reessayer...");
+                    continue;
+                }
+                if (choix < 0 && choix > 2) {
+                    System.out.println("Votre choix doit etre compris entre 1 et 2");
+                } else if (choix == 1) {
+                    boolean continuerB = true;
+                    while (continuerB) {
+                        System.out.print("Veuillez entrer votre nom d'utilisateur (attention a la casse):");
+                        saisie = new BufferedReader(new InputStreamReader(System.in));
+                        try {
+                            nomU = saisie.readLine();
+                        } catch (IOException e) {
+                            System.out.println("Une erreur s'est produite, veuillez reessayer...");
+                            continue;
+                        }
+                        if (userAccount.get(nomU) != null) {
+                            System.out.println("Ce nom d'utilisateur existe deja, veuillez en choisir un autre...");
+                            continue;
+                        } else {
+                            System.out.println("Bien.");
+                        }
+                        System.out.print("Veuillez entrer votre mot de passe: ");
+                        String mdp = "";
+                        saisie = new BufferedReader(new InputStreamReader(System.in));
+                        try {
+                            mdp = saisie.readLine();
+                        } catch (IOException e) {
+                            System.out.println("Une erreur s'est produite, veuillez reessayer...");
+                            continue;
+                        }
+                        System.out.println("Votre compte a bien ete ajoute Mr/Mme " + nomU);
+                        System.out.println("Vous allez etre rediriger vers l'ecran d'accueil des clients");
+                        userAccount.put(nomU, mdp);
+                        continuerB = false;
+                    }
+                    continue;
+                } else if (choix == 2) {
+                    boolean continuerB = true;
+                    nomU = "";
+                    System.out.println("=== CONNECTEZ-VOUS A VOTRE COMPTE ===");
+                    while (continuerB) {
+                        System.out.println();
+                        System.out.print("Veuillez entrer votre nom d'utilisateur (attention a la casse):");
+                        saisie = new BufferedReader(new InputStreamReader(System.in));
+                        try {
+                            nomU = saisie.readLine();
+                        } catch (IOException e) {
+                            System.out.println("Une erreur s'est produite, veuillez reessayer...");
+                            continue;
+                        }
+                        System.out.print("Veuillez entrer votre mot de passe: ");
+                        String mdp = "";
+                        saisie = new BufferedReader(new InputStreamReader(System.in));
+                        try {
+                            mdp = saisie.readLine();
+                        } catch (IOException e) {
+                            System.out.println("Une erreur s'est produite, veuillez reessayer...");
+                            continue;
+                        }
+                        if (userAccount.get(nomU) == null ? mdp == null : userAccount.get(nomU).equals(mdp)) {
+                            System.out.println("Bienvenue Mr/Mme " + nomU);
+                            continuerB = false;
+                        } else {
+                            System.out.println("Le nom d'utilisateur et le mot de passe ne correspondent pas...");
+                        }
+                    }
+                }
+
+                continuer = false;
+            }
         }
-        return (userAccount.get(nomU));
+        return nomU;
     }
 
     public static ArrayList lireFichier(String chemin) throws FileNotFoundException {
@@ -199,19 +297,21 @@ public class Maintenance {
     }
 
     public static int envoiNotif(String cheminAdmin, String nomU, ArrayList appareils, int choix, boolean type) throws IOException {
-        FileWriter fileWriter = new FileWriter(cheminAdmin);
-        BufferedWriter writer = new BufferedWriter(fileWriter);
-        try {
-            if(type){
-                writer.write(nomU + "Accepte de reparer votre " + appareils.get(choix));
-                writer.newLine();
-            } else {
-                writer.write(nomU + "Demande a faire reparer son " + appareils.get(choix));
-                writer.newLine();
+        FileWriter fileWriter = new FileWriter(cheminAdmin, true);
+        try ( BufferedWriter writer = new BufferedWriter(fileWriter)) {
+            try {
+                if (type) {
+                    writer.write(nomU + " Accepte de reparer votre " + appareils.get(choix));
+                    writer.newLine();
+                } else {
+                    writer.write(nomU + " Demande a faire reparer son " + appareils.get(choix));
+                    writer.newLine();
+                }
+            } catch (IOException e) {
+                System.out.println("Une erreur s'est produite lors de l'aces au fichier.");
             }
-        } catch (IOException e) {
-            System.out.println("Une erreur s'est produite lors de l'aces au fichier.");
         }
         return 0;
     }
+    
 }
