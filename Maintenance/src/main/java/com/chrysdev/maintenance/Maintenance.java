@@ -27,7 +27,6 @@ public class Maintenance {
     public static void main(String[] args) throws IOException {
         userAccount.put("junior", "1234");
         adminAccount.put("christian", "12345");
-        ArrayList<String> appareils = new ArrayList<>();
         boolean continuerP = true;
         while (continuerP) {
             boolean continuer = true;
@@ -51,45 +50,18 @@ public class Maintenance {
                 if (choix < 0 && choix > 2) {
                     System.out.println("Votre choix doit etre compris entre 1 et 2");
                 } else if (choix == 1) {
-                    System.out.println("D'accord,  vous allez etre rediriger vers le Menu client");
+                    System.out.println("D'accord,  vous allez etre rediriger vers le Menu administrateur");
                     String nomU = "";
                     nomU = connectUser(true);
+                    Utilisateur user = new Utilisateur(nomU, false);
+                    user.menu();
                     System.out.println("");
                 } else if (choix == 2) {
                     System.out.println("D'accord,  vous allez etre rediriger vers le Menu client");
                     String nomU = "";
                     nomU = connectUser(false);
-                    System.out.println("Voici la liste des appareils disponible a la reparation:");
-                    String chemin = "files/listeRepair.txt";
-                    lireFichier(chemin);
-                    int comp = 1;
-                    for (String i : appareils) {
-                        System.out.println(comp + ") " + i);
-                        comp++;
-                    }
-                    boolean continuerC = true;
-                    while (continuerC) {
-                        System.out.println();
-                        System.out.print("Entrez le numero de votre Appareil: ");
-                        saisie = new BufferedReader(new InputStreamReader(System.in));
-                        choix = 0;
-                        try {
-                            choix = Integer.parseInt(saisie.readLine());
-                        } catch (IOException | NumberFormatException e) {
-                            System.out.println("Une erreur s'est produite, veuillez reessayer...");
-                            continue;
-                        }
-                        if (choix > 0 && choix <= appareils.size()) {
-                            System.out.println("D'accord, votre demande sera transmise au maintenancier.");
-                            String cheminAdmin = "files/notifsAdmin.txt";
-                            choix -= 1;
-                            envoiNotif(cheminAdmin, nomU, appareils, choix, false);
-                            continuerC = false;
-                        } else {
-                            System.err.print("Erreur: Le nombre entre doit etre compris entre 1 et " + (appareils.size()));
-                        }
-                    }
-                    continuer = false;
+                    Utilisateur user = new Utilisateur(nomU, false);
+                    user.menu();
                 }
             }
 
@@ -146,7 +118,6 @@ public class Maintenance {
                             continue;
                         }
                         System.out.println("Votre compte a bien ete ajoute Mr/Mme " + nomU);
-                        Utilisateur nom = new Utilisateur(nomU, false);
                         System.out.println("Vous allez etre rediriger vers l'ecran d'accueil des clients");
                         adminAccount.put(nomU, mdp);
                         continuerB = false;
@@ -275,43 +246,6 @@ public class Maintenance {
             }
         }
         return nomU;
-    }
-
-    public static ArrayList lireFichier(String chemin) throws FileNotFoundException {
-        FileReader fileReader = new FileReader(chemin);
-        BufferedReader reader = new BufferedReader(fileReader);
-        String line = "";
-        ArrayList<String> appareils = new ArrayList<>();
-
-        try {
-            line = reader.readLine();
-
-            while (line != null) {
-                appareils.add(line);
-                line = reader.readLine();
-            }
-        } catch (IOException e) {
-            System.out.println("Une erreur s'est produite lors de la lecture du fichier");
-        }
-        return appareils;
-    }
-
-    public static int envoiNotif(String cheminAdmin, String nomU, ArrayList appareils, int choix, boolean type) throws IOException {
-        FileWriter fileWriter = new FileWriter(cheminAdmin, true);
-        try ( BufferedWriter writer = new BufferedWriter(fileWriter)) {
-            try {
-                if (type) {
-                    writer.write(nomU + " Accepte de reparer votre " + appareils.get(choix));
-                    writer.newLine();
-                } else {
-                    writer.write(nomU + " Demande a faire reparer son " + appareils.get(choix));
-                    writer.newLine();
-                }
-            } catch (IOException e) {
-                System.out.println("Une erreur s'est produite lors de l'aces au fichier.");
-            }
-        }
-        return 0;
     }
     
 }
