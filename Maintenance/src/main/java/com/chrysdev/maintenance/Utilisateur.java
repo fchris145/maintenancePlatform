@@ -4,7 +4,6 @@
  */
 package com.chrysdev.maintenance;
 
-import static com.chrysdev.maintenance.Maintenance.connectUser;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
@@ -62,7 +61,7 @@ public class Utilisateur {
                     appareils.add(line);
                     line = reader.readLine();
                 }
-                retour =  0;
+                retour = 0;
             } catch (IOException e) {
                 retour = 1;
             }
@@ -82,52 +81,81 @@ public class Utilisateur {
             } catch (IOException e) {
                 retour = 1;
             }
+        } else {
+            retour = 1;
         }
         return retour;
     }
 
-    public int envoiNotifC(String appareil) throws IOException {
+    public int envoiNotifC(String appareil) {
         if (m_admin) {
-            FileWriter fileWriter = new FileWriter(m_chemin_reponse, true);
-            try ( BufferedWriter writer = new BufferedWriter(fileWriter)) {
-                try {
-                    writer.write(m_nomU + " Accepte de reparer votre " + appareil);
-                    writer.newLine();
-                } catch (IOException e) {
-                    System.out.println("Une erreur s'est produite lors de l'aces au fichier.");
-                }
+            try {
+                FileWriter fileWriter = new FileWriter(m_chemin_reponse, true);
+                BufferedWriter writer = new BufferedWriter(fileWriter);
+                writer.write(m_nomU + " Accepte votre de demande: " + appareil);
+                writer.newLine();
+            } catch (IOException e) {
+                System.out.println("Une erreur s'est produite lors de l'aces au fichier.");
             }
         } else {
-            FileWriter fileWriter = new FileWriter(m_chemin_envoie_demande, true);
-            try ( BufferedWriter writer = new BufferedWriter(fileWriter)) {
-                try {
-                    writer.write(m_nomU + " Demande a faire reparer son " + appareil);
-                    writer.newLine();
-                } catch (IOException e) {
-                    System.out.println("Une erreur s'est produite lors de l'aces au fichier.");
-                }
+            try {
+                FileWriter fileWriter = new FileWriter(m_chemin_envoie_demande, true);
+                BufferedWriter writer = new BufferedWriter(fileWriter);
+                writer.write(m_nomU + " Demande a faire reparer son " + appareil);
+                writer.newLine();
+            } catch (IOException e) {
+                System.out.println("Une erreur s'est produite lors de l'aces au fichier.");
             }
         }
         return 0;
     }
-    
-    public void menu(){
-        if(m_admin){
-            System.out.println("====== BIENVENUE AU MENU DES ADMINISTRATEURS ======");
-            System.out.println("Que voulez-vous faire?");
-            System.out.println();
-            System.out.println("1. Consulter les demandes de maintenance");
-            System.out.println("2. ");
-            
+
+    public void menu() throws FileNotFoundException {
+        if (m_admin) {
+            boolean continuer = true;
+            while (continuer) {
+                System.out.println("====== BIENVENUE AU MENU DES ADMINISTRATEURS ======");
+                System.out.println("Voici une liste des demandes que vous avez recu:");
+                ArrayList<String> appareils = new ArrayList<>();
+                this.lireFichierC("VD", appareils);
+                int comp = 1;
+                for (String i : appareils) {
+                    System.out.println(comp + ") " + i);
+                    comp++;
+                }
+                boolean continuerC = true;
+                while (continuerC) {
+                    System.out.println();
+                    System.out.print("Entrez le numero de choix ");
+                    BufferedReader saisie = new BufferedReader(new InputStreamReader(System.in));
+                    int choix = 0;
+                    try {
+                        choix = Integer.parseInt(saisie.readLine());
+                    } catch (IOException | NumberFormatException e) {
+                        System.out.println("Une erreur s'est produite, veuillez reessayer...");
+                        continue;
+                    }
+                    if (choix > 0 && choix <= appareils.size()) {
+                        System.out.println("D'accord, nous enverrons votre reponse au client.");
+                        choix -= 1;
+                        String choixAp = appareils.get(choix);
+                        this.envoiNotifC(choixAp);
+                        continuerC = false;
+                    } else {
+                        System.err.print("Erreur: Le nombre entre doit etre compris entre 1 et " + (appareils.size()));
+                    }
+                }
+            }
+            continuer = false;
         } else {
-            System.out.println("====== BIENVENUE AU MENU DES CLIENTS ======");
-            System.out.println("Que voulez-vous faire?");
-            System.out.println();
-            System.out.println("1. Consulter les reponses des admins");
-            System.out.println("2. Faire une demande de maintenance");
             boolean continuer = true;
             int choix = 0;
             while (continuer) {
+                System.out.println("====== BIENVENUE AU MENU DES CLIENTS ======");
+                System.out.println("Que voulez-vous faire?");
+                System.out.println();
+                System.out.println("1. Consulter les reponses des admins");
+                System.out.println("2. Faire une demande de maintenance");
                 System.out.println();
                 System.out.print("Entrez le numero de votre choix: ");
                 BufferedReader saisie = new BufferedReader(new InputStreamReader(System.in));
@@ -141,10 +169,65 @@ public class Utilisateur {
                 if (choix < 0 && choix > 2) {
                     System.out.println("Votre choix doit etre compris entre 1 et 2");
                 } else if (choix == 1) {
-                    System.out.println("D'accord,  vous allez etre rediriger vers le Menu client");
-                    String nomU = "";
-                    nomU = connectUser(true);
-                    System.out.println("");
+                    System.out.println("D'accord,  voici les reponses des admins");
+                    ArrayList<String> appareils = new ArrayList<>();
+                    this.lireFichierC("VR", appareils);
+                    int comp = 1;
+                    for (String i : appareils) {
+                        System.out.println(comp + ") " + i);
+                        comp++;
+                    }
+                    boolean continuerC = true;
+                    while (continuerC) {
+                        System.out.println();
+                        System.out.print("Entrez 5 pour sortir: ");
+                        saisie = new BufferedReader(new InputStreamReader(System.in));
+                        choix = 0;
+                        try {
+                            choix = Integer.parseInt(saisie.readLine());
+                        } catch (IOException | NumberFormatException e) {
+                            System.out.println("Une erreur s'est produite, veuillez reessayer...");
+                            continue;
+                        }
+                        if (choix == 5) {
+                            System.out.println("D'accord, vous allez etre rediriger");
+                            continuerC = false;
+                        } else {
+                            System.err.print("Erreur: Veuillez entrer 5 si vous souhaiter sortir");
+                        }
+                    }
+                } else if (choix == 2){
+                    System.out.println("Voici la liste des appareils disponible a la reparation:");
+                    ArrayList<String> appareils = new ArrayList<>();
+                    this.lireFichierC("VM", appareils);
+                    int comp = 1;
+                    for (String i : appareils) {
+                        System.out.println(comp + ") " + i);
+                        comp++;
+                    }
+                    boolean continuerC = true;
+                    while (continuerC) {
+                        System.out.println();
+                        System.out.print("Entrez le numero de votre Appareil: ");
+                        saisie = new BufferedReader(new InputStreamReader(System.in));
+                        choix = 0;
+                        try {
+                            choix = Integer.parseInt(saisie.readLine());
+                        } catch (IOException | NumberFormatException e) {
+                            System.out.println("Une erreur s'est produite, veuillez reessayer...");
+                            continue;
+                        }
+                        if (choix > 0 && choix <= appareils.size()) {
+                            System.out.println("D'accord, votre demande sera transmise au maintenancier.");
+                            choix -= 1;
+                            String choixAp = appareils.get(choix);
+                            this.envoiNotifC(choixAp);
+                            continuerC = false;
+                        } else {
+                            System.err.print("Erreur: Le nombre entre doit etre compris entre 1 et " + (appareils.size()));
+                        }
+                    }
+                    continuer = false;
                 }
             }
         }
