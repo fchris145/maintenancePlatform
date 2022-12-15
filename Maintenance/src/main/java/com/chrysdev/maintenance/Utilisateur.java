@@ -23,8 +23,8 @@ public class Utilisateur {
     private String m_nomU;
     private boolean m_admin;
     private String m_chemin_liste_machine = "files/listeRepair.txt";
-    private String m_chemin_envoie_demande = "files/notifsAdmin";
-    private String m_chemin_reponse = "files/reponse";
+    private String m_chemin_envoie_demande = "files/notifsAdmin.txt";
+    private String m_chemin_reponse = "files/reponse.txt";
 
     //Methodes
     public Utilisateur(String nomU, boolean admin) {
@@ -53,10 +53,8 @@ public class Utilisateur {
             FileReader fileReader = new FileReader(m_chemin_reponse);
             BufferedReader reader = new BufferedReader(fileReader);
             String line = "";
-
             try {
                 line = reader.readLine();
-
                 while (line != null) {
                     appareils.add(line);
                     line = reader.readLine();
@@ -72,10 +70,11 @@ public class Utilisateur {
             String line = "";
             try {
                 line = reader.readLine();
-
                 while (line != null) {
                     appareils.add(line);
                     line = reader.readLine();
+                    
+                    reader.close();
                 }
                 retour = 0;
             } catch (IOException e) {
@@ -94,6 +93,8 @@ public class Utilisateur {
                 BufferedWriter writer = new BufferedWriter(fileWriter);
                 writer.write(m_nomU + " Accepte votre de demande: " + appareil);
                 writer.newLine();
+                
+                writer.close();
             } catch (IOException e) {
                 System.out.println("Une erreur s'est produite lors de l'aces au fichier.");
             }
@@ -103,6 +104,8 @@ public class Utilisateur {
                 BufferedWriter writer = new BufferedWriter(fileWriter);
                 writer.write(m_nomU + " Demande a faire reparer son " + appareil);
                 writer.newLine();
+                
+                writer.close();
             } catch (IOException e) {
                 System.out.println("Une erreur s'est produite lors de l'aces au fichier.");
             }
@@ -116,6 +119,7 @@ public class Utilisateur {
             while (continuer) {
                 System.out.println("====== BIENVENUE AU MENU DES ADMINISTRATEURS ======");
                 System.out.println("Voici une liste des demandes que vous avez recu:");
+                System.out.println("Vous pouvez aussi entrer 50 pour sortir");
                 ArrayList<String> appareils = new ArrayList<>();
                 this.lireFichierC("VD", appareils);
                 int comp = 1;
@@ -141,10 +145,14 @@ public class Utilisateur {
                         String choixAp = appareils.get(choix);
                         this.envoiNotifC(choixAp);
                         continuerC = false;
-                    } else {
+                    } else if (choix == 50){
+                        System.out.println("SORTIE DU PROGRAMME...");
+                        continuerC = false;
+                    }else {
                         System.err.print("Erreur: Le nombre entre doit etre compris entre 1 et " + (appareils.size()));
                     }
                 }
+                continuer = false;
             }
             continuer = false;
         } else {
@@ -156,6 +164,7 @@ public class Utilisateur {
                 System.out.println();
                 System.out.println("1. Consulter les reponses des admins");
                 System.out.println("2. Faire une demande de maintenance");
+                System.out.println("3. Sortir du programme");
                 System.out.println();
                 System.out.print("Entrez le numero de votre choix: ");
                 BufferedReader saisie = new BufferedReader(new InputStreamReader(System.in));
@@ -166,7 +175,7 @@ public class Utilisateur {
                     System.out.println("Une erreur s'est produite, veuillez reessayer...");
                     continue;
                 }
-                if (choix < 0 && choix > 2) {
+                if (choix < 0 && choix > 3) {
                     System.out.println("Votre choix doit etre compris entre 1 et 2");
                 } else if (choix == 1) {
                     System.out.println("D'accord,  voici les reponses des admins");
@@ -227,6 +236,9 @@ public class Utilisateur {
                             System.err.print("Erreur: Le nombre entre doit etre compris entre 1 et " + (appareils.size()));
                         }
                     }
+                    continuer = false;
+                } else if (choix == 3){
+                    System.out.println("SORTIE DU PROGRAMME...");
                     continuer = false;
                 }
             }

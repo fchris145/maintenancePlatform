@@ -5,14 +5,9 @@
 package com.chrysdev.maintenance;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
-import java.util.ArrayList;
 
 /**
  *
@@ -53,7 +48,7 @@ public class Maintenance {
                     System.out.println("D'accord,  vous allez etre rediriger vers le Menu administrateur");
                     String nomU = "";
                     nomU = connectUser(true);
-                    Utilisateur user = new Utilisateur(nomU, false);
+                    Utilisateur user = new Utilisateur(nomU, true);
                     user.menu();
                     System.out.println("");
                 } else if (choix == 2) {
@@ -63,6 +58,7 @@ public class Maintenance {
                     Utilisateur user = new Utilisateur(nomU, false);
                     user.menu();
                 }
+                continuer = false;
             }
 
         }
