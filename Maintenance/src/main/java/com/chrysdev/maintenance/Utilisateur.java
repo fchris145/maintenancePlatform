@@ -31,6 +31,11 @@ public class Utilisateur {
         m_nomU = nomU;
         m_admin = admin;
     }
+    
+//    @Override
+//    public void finalize(){
+//        
+//    }
 
     public int lireFichierC(String demande, ArrayList appareils) throws FileNotFoundException {
         int retour = 0;
@@ -44,6 +49,7 @@ public class Utilisateur {
                     appareils.add(line);
                     line = reader.readLine();
                 }
+                reader.close();
                 retour = 0;
             } catch (IOException e) {
                 retour = 1;
@@ -59,6 +65,7 @@ public class Utilisateur {
                     appareils.add(line);
                     line = reader.readLine();
                 }
+                reader.close();
                 retour = 0;
             } catch (IOException e) {
                 retour = 1;
@@ -73,9 +80,9 @@ public class Utilisateur {
                 while (line != null) {
                     appareils.add(line);
                     line = reader.readLine();
-                    
-                    reader.close();
+
                 }
+                reader.close();
                 retour = 0;
             } catch (IOException e) {
                 retour = 1;
@@ -86,17 +93,30 @@ public class Utilisateur {
         return retour;
     }
 
-    public int envoiNotifC(String appareil) {
+    public int envoiNotifC(String appareil, boolean decision) {
         if (m_admin) {
-            try {
-                FileWriter fileWriter = new FileWriter(m_chemin_reponse, true);
-                BufferedWriter writer = new BufferedWriter(fileWriter);
-                writer.write(m_nomU + " Accepte votre de demande: " + appareil);
-                writer.newLine();
-                
-                writer.close();
-            } catch (IOException e) {
-                System.out.println("Une erreur s'est produite lors de l'aces au fichier.");
+            if (decision) {
+                try {
+                    FileWriter fileWriter = new FileWriter(m_chemin_reponse, true);
+                    BufferedWriter writer = new BufferedWriter(fileWriter);
+                    writer.write(m_nomU + " accepte votre de demande: " + appareil);
+                    writer.newLine();
+
+                    writer.close();
+                } catch (IOException e) {
+                    System.out.println("Une erreur s'est produite lors de l'aces au fichier.");
+                }
+            } else {
+                try {
+                    FileWriter fileWriter = new FileWriter(m_chemin_reponse, true);
+                    BufferedWriter writer = new BufferedWriter(fileWriter);
+                    writer.write(m_nomU + " refuse votre de demande: " + appareil);
+                    writer.newLine();
+
+                    writer.close();
+                } catch (IOException e) {
+                    System.out.println("Une erreur s'est produite lors de l'aces au fichier.");
+                }
             }
         } else {
             try {
@@ -104,7 +124,7 @@ public class Utilisateur {
                 BufferedWriter writer = new BufferedWriter(fileWriter);
                 writer.write(m_nomU + " Demande a faire reparer son " + appareil);
                 writer.newLine();
-                
+
                 writer.close();
             } catch (IOException e) {
                 System.out.println("Une erreur s'est produite lors de l'aces au fichier.");
@@ -140,15 +160,39 @@ public class Utilisateur {
                         continue;
                     }
                     if (choix > 0 && choix <= appareils.size()) {
-                        System.out.println("D'accord, nous enverrons votre reponse au client.");
-                        choix -= 1;
-                        String choixAp = appareils.get(choix);
-                        this.envoiNotifC(choixAp);
+                        boolean continuerD = true;
+                        while (continuerD) {
+                            System.out.println("Bien recu.");
+                            System.out.print("Entrez 1 pour accepter cette demande et 2 pour refuser la demande: ");
+                            saisie = new BufferedReader(new InputStreamReader(System.in));
+                            int decision = 0;
+                            try {
+                                decision = Integer.parseInt(saisie.readLine());
+                            } catch (IOException | NumberFormatException e) {
+                                System.out.println("Une erreur s'est produite, veuillez reessayer...");
+                                continue;
+                            }
+                            if (decision == 1) {
+                                System.out.println("D'accord, votre reponse sera envoye au client");
+                                choix -= 1;
+                                String choixAp = appareils.get(choix);
+                                this.envoiNotifC(choixAp, true);
+                                continuerD = false;
+                            } else if (decision == 2) {
+                                System.out.println("D'accord, votre reponse sera envoye au client");
+                                choix -= 1;
+                                String choixAp = appareils.get(choix);
+                                this.envoiNotifC(choixAp, false);
+                                continuerD = false;
+                            } else {
+                                System.out.println("Erreur entrez 1 ou 2...");
+                            }
+                        }
                         continuerC = false;
-                    } else if (choix == 50){
+                    } else if (choix == 50) {
                         System.out.println("SORTIE DU PROGRAMME...");
                         continuerC = false;
-                    }else {
+                    } else {
                         System.err.print("Erreur: Le nombre entre doit etre compris entre 1 et " + (appareils.size()));
                     }
                 }
@@ -205,7 +249,7 @@ public class Utilisateur {
                             System.err.print("Erreur: Veuillez entrer 5 si vous souhaiter sortir");
                         }
                     }
-                } else if (choix == 2){
+                } else if (choix == 2) {
                     System.out.println("Voici la liste des appareils disponible a la reparation:");
                     ArrayList<String> appareils = new ArrayList<>();
                     this.lireFichierC("VM", appareils);
@@ -230,14 +274,14 @@ public class Utilisateur {
                             System.out.println("D'accord, votre demande sera transmise au maintenancier.");
                             choix -= 1;
                             String choixAp = appareils.get(choix);
-                            this.envoiNotifC(choixAp);
+                            this.envoiNotifC(choixAp, false);
                             continuerC = false;
                         } else {
                             System.err.print("Erreur: Le nombre entre doit etre compris entre 1 et " + (appareils.size()));
                         }
                     }
                     continuer = false;
-                } else if (choix == 3){
+                } else if (choix == 3) {
                     System.out.println("SORTIE DU PROGRAMME...");
                     continuer = false;
                 }
